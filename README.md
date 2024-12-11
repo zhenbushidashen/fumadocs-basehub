@@ -6,7 +6,8 @@ This is an example to use Fumadocs with BaseHub.
 
 Sign in on [BaseHub](https://basehub.com).
 
-Fork the BaseHub repo: https://basehub.com/join?invite-token=vaBjC9XlWgTr2K7TdYPqj, and click the "Developers" tab on sidebar (left bottom corner).
+Fork the [BaseHub repository](https://basehub.com/fuma-nama/fumadocs-template/explore?fork=true), and click the "Developers" tab on sidebar (left bottom corner).
+
 Open the "Connect to Your App" guide, and copy the example `.env` to your app.
 
 Install & run development server:
