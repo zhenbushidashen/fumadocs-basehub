@@ -1,11 +1,6 @@
 import { Node } from "basehub/react-rich-text";
 import { RichText } from "@/components/rich-text";
-import {
-  DocsPage,
-  DocsBody,
-  DocsDescription,
-  DocsTitle,
-} from "fumadocs-ui/page";
+import { DocsPage, DocsBody, DocsTitle } from "fumadocs-ui/page";
 import { notFound } from "next/navigation";
 import { basehub } from "basehub";
 import { draftMode } from "next/headers";
@@ -26,6 +21,7 @@ export default async function Page(props: {
             eq: params.slug,
           },
         },
+        first: 1,
       },
       items: {
         richText: {
@@ -42,21 +38,36 @@ export default async function Page(props: {
   const page = documentation.items.at(0);
   if (!page) notFound();
 
-  const tocList: {
-    type: "listItem";
-    content: Node[];
-  }[] = page.richText?.json.toc.at(0)?.content ?? [];
+  return (
+    <DocsPage toc={page.richText ? parseToc(page.richText.json.toc[0]) : []}>
+      <DocsTitle>{page._title}</DocsTitle>
+      <DocsBody className="text-sm">
+        <RichText content={page.richText?.json.content} />
+      </DocsBody>
+    </DocsPage>
+  );
+}
 
-  const toc: TOCItemType[] = [];
-  for (const item of tocList) {
+function parseToc(list: Node): TOCItemType[] {
+  const results: TOCItemType[] = [];
+
+  for (const item of list.content ?? []) {
+    if (item.type === "orderedList" || item.type === "listItem") {
+      results.push(...parseToc(item));
+      continue;
+    }
+
+    if (!("content" in item) || !item.content) continue;
+
     const nodes = findTextNode(item.content[0]);
 
     for (const node of nodes) {
       const mark = findLinkMark(node);
       if (!mark) continue;
 
-      toc.push({
+      results.push({
         depth: mark.depth,
+        url: mark.href,
         title: (
           <RichText
             content={[node]}
@@ -66,19 +77,11 @@ export default async function Page(props: {
             }}
           />
         ),
-        url: mark.href,
       });
     }
   }
 
-  return (
-    <DocsPage toc={toc}>
-      <DocsTitle>{page._title}</DocsTitle>
-      <DocsBody className="text-sm">
-        <RichText content={page.richText?.json.content} />
-      </DocsBody>
-    </DocsPage>
-  );
+  return results;
 }
 
 function findTextNode(n: Node): Extract<Node, { type: "text" }>[] {
@@ -150,4 +153,20 @@ export async function generateMetadata(props: {
     title: page._title,
     description: page.category,
   };
+}
+
+export async function generateStaticParams() {
+  const { documentation } = await basehub().query({
+    documentation: {
+      items: {
+        slug: true,
+      },
+    },
+  });
+
+  return documentation.items
+    .filter((item) => Boolean(item.slug))
+    .map((item) => ({
+      slug: item.slug,
+    }));
 }

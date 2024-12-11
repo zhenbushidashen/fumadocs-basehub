@@ -1,26 +1,17 @@
-# fumadocs-basehub
+## Fumadocs BaseHub
 
-This is a Next.js application generated with
-[Create Fumadocs](https://github.com/fuma-nama/fumadocs).
+This is an example to use Fumadocs with BaseHub.
 
-Run development server:
+### Setup
+
+Sign in on [BaseHub](https://basehub.com).
+
+Fork the BaseHub repo: https://basehub.com/join?invite-token=vaBjC9XlWgTr2K7TdYPqj, and click the "Developers" tab on sidebar (left bottom corner).
+Open the "Connect to Your App" guide, and copy the example `.env` to your app.
+
+Install & run development server:
 
 ```bash
-npm run dev
-# or
+pnpm i
 pnpm dev
-# or
-yarn dev
 ```
-
-Open http://localhost:3000 with your browser to see the result.
-
-## Learn More
-
-To learn more about Next.js and Fumadocs, take a look at the following
-resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
-  features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Fumadocs](https://fumadocs.vercel.app) - learn about Fumadocs

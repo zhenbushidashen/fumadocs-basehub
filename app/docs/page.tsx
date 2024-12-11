@@ -25,7 +25,7 @@ export default async function Page() {
   return (
     <DocsPage>
       <DocsTitle>Introduction</DocsTitle>
-      <DocsBody className="text-sm text-fd-muted-foreground">
+      <DocsBody className="text-sm">
         <RichText content={home.richText?.json.content} />
         <Cards>
           {items.map((item) => (
