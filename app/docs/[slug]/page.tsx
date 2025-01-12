@@ -1,10 +1,9 @@
-import type { RichTextNode, RichTextTocNode } from "basehub/api-transaction";
 import { RichText } from "@/components/rich-text";
 import { DocsPage, DocsBody, DocsTitle } from "fumadocs-ui/page";
 import { notFound } from "next/navigation";
 import { basehub } from "basehub";
-import type { TOCItemType } from "fumadocs-core/server";
 import { Pump } from "basehub/react-pump";
+import { parseToc } from "./parse-toc";
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
@@ -16,7 +15,7 @@ export default async function Page(props: {
       queries={[
         {
           documentation: {
-            __args: { filter: { slug: { eq: params.slug } } },
+            __args: { filter: { _sys_slug: { eq: params.slug } } },
             item: {
               richText: {
                 json: {
@@ -51,76 +50,6 @@ export default async function Page(props: {
   );
 }
 
-function parseToc(list: RichTextTocNode, level = 0): TOCItemType[] {
-  const results: TOCItemType[] = [];
-  if (list.type === "text") return [];
-
-  for (const item of list.content ?? []) {
-    if (item.type === "orderedList" || item.type === "listItem") {
-      results.push(...parseToc(item, level + 1));
-      continue;
-    }
-
-    if (item.type !== "paragraph" || !item.content) continue;
-
-    const nodes = findTextNode(item.content[0]);
-
-    for (const node of nodes) {
-      const mark = findLinkMark(node);
-      if (!mark) continue;
-
-      results.push({
-        depth: level + 1,
-        url: mark.href,
-        title: (
-          <RichText
-            content={[node as RichTextNode]}
-            // @ts-expect-error -- jsx
-            components={{
-              a: (props) => <span {...props} />,
-            }}
-          />
-        ),
-      });
-    }
-  }
-
-  return results;
-}
-
-function findTextNode(
-  n: RichTextTocNode
-): Extract<RichTextTocNode, { type: "text" }>[] {
-  if (n.type === "text") {
-    return [n];
-  }
-
-  return n.content?.flatMap(findTextNode) ?? [];
-}
-
-function findLinkMark(n: RichTextTocNode):
-  | {
-      href: string;
-    }
-  | undefined {
-  if (n.type === "text") {
-    const mark = n.marks?.find((m) => m.type === "link");
-
-    if (mark) {
-      return {
-        href: mark.attrs.href,
-      };
-    }
-
-    return;
-  }
-
-  for (const c of n.content ?? []) {
-    const result = findLinkMark(c);
-    if (result) return result;
-  }
-}
-
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
 }) {
@@ -129,7 +58,7 @@ export async function generateMetadata(props: {
     documentation: {
       __args: {
         filter: {
-          slug: {
+          _sys_slug: {
             eq: params.slug,
           },
         },
@@ -141,6 +70,7 @@ export async function generateMetadata(props: {
       },
     },
   });
+
   const page = documentation.items.at(0);
   if (!page) notFound();
 
@@ -154,14 +84,14 @@ export async function generateStaticParams() {
   const { documentation } = await basehub().query({
     documentation: {
       items: {
-        slug: true,
+        _slug: true,
       },
     },
   });
 
   return documentation.items
-    .filter((item) => Boolean(item.slug))
+    .filter((item) => item._slug !== "index")
     .map((item) => ({
-      slug: item.slug,
+      slug: item._slug,
     }));
 }

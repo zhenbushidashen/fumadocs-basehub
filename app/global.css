@@ -2,6 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.dark {
-  --primary: 27 100% 50%;
+:root {
+  --fd-primary: 27 100% 50%;
 }

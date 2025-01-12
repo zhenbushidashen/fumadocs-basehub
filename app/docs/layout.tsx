@@ -10,7 +10,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       queries={[
         {
           documentation: {
-            items: { slug: true, _title: true, category: true },
+            items: { _slug: true, _title: true, category: true },
           },
         },
       ]}
@@ -39,7 +39,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           items.splice(idx, 0, {
             type: "page",
             name: item._title,
-            url: item.slug ? `/docs/${item.slug}` : "/docs",
+            url: item._slug === "index" ? "/docs" : `/docs/${item._slug}`,
           });
         }
 
